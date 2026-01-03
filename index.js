@@ -12,6 +12,12 @@ const authMiddleware = require("./middlewares/authMiddleware")
 
 const PORT = process.env.PORT || 3000;
 
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use("/", authRouter)
 app.use("/task", authMiddleware, taskRouter);
 
