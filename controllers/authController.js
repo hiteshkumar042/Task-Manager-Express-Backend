@@ -1,5 +1,4 @@
-const users = []
-
+const User = require("../model/user");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken")
 
@@ -11,22 +10,19 @@ const register = async (req, res) => {
         return res.status(404).json("Email or Password is Missing")
     }
 
-    const user = users.find(u => u.email === email);
+    const exists = await User.findOne({ email });
 
-    if (user) {
+    if (exists) {
         return res.status(409).json({ message: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
-    const newUser = {
-        id: users.length + 1,
+    const user = await User.create({
         email,
         password: hashedPassword
-    }
+    });
 
-    users.push(newUser)
-
-    res.json({ msg: "Registration succesfull", User: newUser })
+    res.status(201).json({ message: "User registered successfully" });
 }
 
 const login = async (req, res) => {
@@ -36,22 +32,22 @@ const login = async (req, res) => {
         return res.status(400).json("Email or Password is Missing")
     }
 
-    const user = users.find(user => user.email == email);
+    const user = await User.findOne({ email });
 
     if (!user) {
         return res.status(404).json({ message: "User not found" });
     }
 
-    const isValid = await bcrypt.compare(password, user.password)
+    const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
-        return res.status(401).json("user Not found")
+        return res.status(401).json({ message: "Invalid credentials" });
     }
 
     const token = jwt.sign(
-        { id: user.id, email: user.email },
+        { id: user._id },
         process.env.JWT_SECRET,
-        { expiresIn: "1h" }
-    )
+        { expiresIn: "1d" }
+    );
 
     res.json({
         message: "Login Succesfull",

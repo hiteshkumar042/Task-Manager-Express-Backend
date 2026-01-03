@@ -13,7 +13,7 @@ const authMiddleware = require("./middlewares/authMiddleware")
 const PORT = process.env.PORT || 3000;
 
 app.use("/", authRouter)
-app.use("/task", taskRouter);
+app.use("/task", authMiddleware, taskRouter);
 
 
 mongoose.connect(process.env.MONGO_URI,
